@@ -1,0 +1,74 @@
+.title {
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+  font-size: rem(100px);
+  font-weight: 900;
+  letter-spacing: rem(-2px);
+
+  @media (max-width: $mantine-breakpoint-md) {
+    font-size: rem(50px);
+  }
+}
+
+
+.voucherScreenContainer {
+  margin: "0 !important";
+  padding: "10px !important";
+}
+.actionsContainer {
+  margin: 30px 0 130px 0;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* .vouchersContainer {
+  display: "flex";
+  flexDirection: "column";
+  flexWrap: "wrap";
+  gap: "24px";
+  marginTop: "30px";
+  [`@media (max-width: ${theme.breakpoints.sm}px)`]: {
+    alignItems: "center";
+    justifyContent: "center";
+  },
+},
+heroImage: {
+
+  width: "340px",
+  marginTop: "50px",
+  [`@media (max-width: 400px)`]: {
+    maxWidth: "100%",
+    minWidth: "100%",
+    width: "100%",
+  },
+},
+settingsContainer: {
+  borderRadius: "8px",
+  width: "591px",
+  margin: "45px auto 0 auto",
+  minWidth: "591px",
+  [`@media (max-width: 900px)`]: {
+    maxWidth: "100%",
+    minWidth: "100%",
+    width: "100%",
+  },
+},
+
+title: {
+  marginTop: "42px",
+  marginBottom: "30px",
+},
+p: {
+  fontWeight: 550,
+  fontSize: "18px",
+  color: "grey",
+  lineHeight: "30px",
+  textAlign: "center",
+  marginTop: "32px",
+},
+test: {
+  fontSize: "1rem",
+}, */
+
+

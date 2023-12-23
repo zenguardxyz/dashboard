@@ -1,0 +1,82 @@
+
+.card {
+    display: "flex";
+    flex-direction: "column";
+    cursor: "pointer";
+    justify-content: "center";
+    width: 285px;
+    /* height: "200px", */
+    /* background: theme.colorScheme === "dark" ? "#282927" : "#f1f1f1", */
+    box-shadow: 0px 2px 6px rgba(61, 41, 41, 0.08);
+    border-radius: 20px;
+}
+
+  .card:hover { 
+    background: light-dark(#f1f1f1, #56575c);
+    cursor: pointer;
+  }
+  
+  .cardSkeleton {
+    display: "flex";
+    flex-direction: "column";
+    justify-content: "center";
+    width: 285px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    /* color: theme.colorScheme === "dark" ? "#A6A7AB" : theme.colors.gray[7], */
+  }
+  .p {
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 18px;
+    text-align: "center";
+    margin-top: 32px;
+  }
+
+
+.cardContainer {
+    padding: 20px;
+    border: ' 1px solid #d9e1ec';
+    border-radius: 4px;
+    transition: 'all .3s ease';
+    cursor: 'pointer';
+    background: '#fff';
+    max-width: 400px;
+    /* '&:hover': {
+      cursor: 'pointer',
+      borderColor: '#2ACB82',
+      // boxShadow: '0 0 5px #2ACB82',
+    }, */
+  }
+
+  .imageContainer {
+    height: 68px;
+    width: 68px;
+    border: '1px solid transparant';
+    /* // display: 'flex', */
+    /* // alignItems: 'center', */
+    /* // justifyContent: 'center', */
+  }
+  .image {
+    /* // padding: '4px', */
+    height: 50px;
+    width: 50px;
+    display: 'block';
+    align-self: 'center';
+  }
+  .pluginName {
+    font-weight: 600;
+    font-size: 16px;
+    margin-top: 6px;
+  }
+  .description {
+    font-weight: 400;
+    line-height: 24px;
+    font-size: 14px;
+    margin-top: -14px;
+  }
+
+.badge {
+    margin-top: -5px;
+  }
+
