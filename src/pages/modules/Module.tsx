@@ -24,10 +24,11 @@ const ModuleMeta: FunctionComponent<ModuleMetaProps> = ({ metadata }) => {
 
 type ModuleProps = {
   address: string;
+  publisher: string;
   pluginDetails?: any
 };
 
-export const Module: FunctionComponent<ModuleProps> = ({ address, pluginDetails }) => {
+export const Module: FunctionComponent<ModuleProps> = ({ address, publisher, pluginDetails }) => {
     const [details, setDetails] = useState<PluginDetails|undefined>(undefined);
     const navigate = useNavigate();
 
@@ -47,7 +48,7 @@ export const Module: FunctionComponent<ModuleProps> = ({ address, pluginDetails 
 
     const handleClick = (details: any) => {
 
-        setPluginDetails({ ...details, address: address});
+        setPluginDetails({ ...details, address: address, publisher: publisher});
         navigate(RoutePath.pluginDetails); 
 
     }
@@ -59,6 +60,7 @@ export const Module: FunctionComponent<ModuleProps> = ({ address, pluginDetails 
             image={details?.metadata.iconUrl}
             enabled={details?.enabled}
             loading={ details == undefined }
+            publisher={publisher}
             onClick={ () => handleClick(details) }
             />
             

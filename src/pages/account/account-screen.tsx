@@ -16,6 +16,8 @@ import { getProvider } from "../../logic/web3";
 import { NetworkUtil } from "../../logic/networks";
 import { PROTOCOL_CHAIN_ID } from "../../logic/constants"
 import { AddressUtil } from "@/utils/address";
+import { useEthersSigner } from "@/utils/wagmi";
+import { attestPublisher, listAttestation, loadPublisher, verificationDetails } from "../../logic/attestation";
 
 
 
@@ -23,13 +25,17 @@ const AccountScreen = () => {
   const [ name, setName ] = useState('');
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === "dark";
-  const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { setOpen } = useModal()
 
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [verifying, setVerifying] = useState(false);
+
   const [chainId, setChainId]: any = useState(PROTOCOL_CHAIN_ID);
+  const sign = useEthersSigner(chainId);
+  const [attestation, setAttestation]: any = useState();
+  const [signer, setSigner] = useState(sign);
 
  
   const { setPluginDetails } = usePluginStore(
@@ -46,6 +52,10 @@ const AccountScreen = () => {
         const provider =  await getProvider()
         const chainId =  (await provider.getNetwork()).chainId
         setChainId(chainId)
+        setSigner(sign);
+        setLoading(true);
+        setAttestation(await verificationDetails(address!));
+        setLoading(false);
     
       }
       catch(e)
@@ -54,7 +64,7 @@ const AccountScreen = () => {
       }
       
   })()   
-  }, [])
+  }, [sign, address])
 
 
   return (
@@ -75,7 +85,7 @@ const AccountScreen = () => {
         <Text size="sm" >
               A name to identify the publisher
         </Text>
-        <TextInput size="md"  value={name} leftSection={<IconUser/>} style={{width:"50%"}} onChange={(event)=> setName(event.currentTarget.value)}/>
+        <TextInput size="md"  value={loadPublisher(address!)?.name} leftSection={<IconUser/>} style={{width:"50%"}} onChange={(event)=> setName(event.currentTarget.value)}/>
         </Stack>
 
     
@@ -87,22 +97,27 @@ const AccountScreen = () => {
         <Text size="sm" >
         A name to identify the publisher   
         </Text>
-        <TextInput size="md" leftSection={<IconWorldWww/>} style={{width:"50%"}}/>
+        <TextInput value={loadPublisher(address!)?.link} size="md" leftSection={<IconWorldWww/>} style={{width:"50%"}}/>
         </Stack>
 
-            
-      <Stack  style={{marginBottom: '30px'}}>           
+
+      <Group>        
+      <Stack  style={{marginBottom: '30px'}}>
+              
         <Text size="md" style={{fontWeight: 600}}>
              Logo
         </Text>
         <Text size="sm" >
          Logo to identify the publisher   
         </Text>
-
         </Stack>
+        <Image style={{ width: 60}}  src= {loadPublisher(address!)?.logo} alt="attester image" /> 
+      
+        </Group>
+     
 
         <Button
-                onClick={() => { setPluginDetails({address}); navigate(RoutePath.publishDetails)}}
+                onClick={() => { }}
                 leftSection={<IconPlugConnected />} 
                 size='md'
                 variant="filled"
@@ -124,8 +139,34 @@ const AccountScreen = () => {
                       marginTop: 30
                     }}>
 
+         { loading && <>
+         <Group >
+            <Group>
+            <Skeleton height={70} mt={6} radius="lg"  width="80px" />
+              <Stack>
+            <Skeleton height={15} mt={6} radius="lg"  width="100px" />
+             <Skeleton height={15} mt={6} radius="lg"  width="100px" />
+              </Stack>
+            </Group>
+            <Skeleton style={{marginLeft: '100px'}} height={35} mt={6} radius="sm"  width="15%" />
 
-         <Group style={{marginBottom: '40px'}} >
+          </Group> 
+          <Group >
+            <Group>
+            <Skeleton height={70} mt={6} radius="lg"  width="80px" />
+              <Stack>
+            <Skeleton height={15} mt={6} radius="lg"  width="100px" />
+             <Skeleton height={15} mt={6} radius="lg"  width="100px" />
+              </Stack>
+            </Group>
+            <Skeleton style={{marginLeft: '100px'}} height={35} mt={6} radius="sm"  width="15%" />
+
+          </Group> 
+          </>
+         }
+
+     
+       { !loading && <> <Group style={{marginBottom: '40px'}} >
         <Avatar size={40}  src= {ETH} alt="attester image" /> 
         <Stack gap='5px' style={{width: '200px'}}>
         <Text size="md" > Your Account</Text>
@@ -137,7 +178,7 @@ const AccountScreen = () => {
          </Stack>
 
        {isConnected ?  <Badge style={{  marginLeft: '40px' }} leftSection={<IconCheck/>} size="lg" color="green" variant="light">
-         VERIFIED</Badge>
+         CONNECTED</Badge>
             
        :
         <Button style={{  marginLeft: '40px',  width: '140px' }}
@@ -160,19 +201,19 @@ const AccountScreen = () => {
         <Text size="md" > Twitter Account</Text>
         <Anchor target='_blank' href={`${NetworkUtil.getNetworkById(chainId)?.blockExplorer}/address/${address}`}>           
         <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-            {isConnected ? '@zenguardxyz' : 'Your Twitter account'}
+            { attestation?.profiles?.includes(1n) && loadPublisher(address!)?.x ? `@${loadPublisher(address!).x}` : 'Your Twitter account'}
          </Text>
          </Anchor>
          </Stack>
 
-       {isConnected ?  <Badge style={{  marginLeft: '40px' }} leftSection={<IconCheck/>} size="lg" color="green" variant="light">
+       { attestation?.profiles?.includes(1n)  ?  <Badge style={{  marginLeft: '40px' }} leftSection={<IconCheck/>} size="lg" color="green" variant="light">
          VERIFIED</Badge>
             
        :
         <Button style={{  marginLeft: '40px', width: '140px' }}
-              // loading={registering}
-              onClick={() => { setOpen(true) }}
-              // leftSection={<IconApps />} 
+              loading={verifying}
+              loaderProps={{type: 'dots', size: 'md'}}
+              onClick={async () => { setVerifying(true); await attestPublisher('0x2f7059b402e9a52cd676e52a420e2e86db13fc1b092b55764a3de6ea17b3eb22', signer!); setAttestation(await verificationDetails(address!)); setVerifying(false); }}
               variant="light"
               radius="md"
               color={dark ? 'var(--mantine-color-white-7)' : 'var(--mantine-color-gray-7)'}
@@ -188,19 +229,19 @@ const AccountScreen = () => {
         <Text size="md" > GitHub Account</Text>
         <Anchor target='_blank' href={`${NetworkUtil.getNetworkById(chainId)?.blockExplorer}/address/${address}`}>           
         <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-            {isConnected ? '@zenguardxyz' : 'Your GitHub account'}
+          { attestation?.profiles?.includes(2n) && loadPublisher(address!)?.github ? `@${loadPublisher(address!).github}`  : 'Your GitHub account'}
          </Text>
          </Anchor>
          </Stack>
 
-       {isConnected ?  <Badge style={{  marginLeft: '40px' }} leftSection={<IconCheck/>} size="lg" color="green" variant="light">
+       { attestation?.profiles?.includes(2n)  ?  <Badge style={{  marginLeft: '40px' }} leftSection={<IconCheck/>} size="lg" color="green" variant="light">
          VERIFIED</Badge>
             
        :
         <Button style={{  marginLeft: '40px', width: '140px' }}
-              // loading={registering}
-              onClick={() => { setOpen(true) }}
-              // leftSection={<IconApps />} 
+              loading={verifying}
+              loaderProps={{type: 'dots', size: 'md'}}
+              onClick={async () => { setVerifying(true); await attestPublisher('0x2f7059b402e9a52cd676e52a420e2e86db13fc1b092b55764a3de6ea17b3eb22', signer!);  setAttestation(await verificationDetails(address!)); setVerifying(false); }}
               variant="light"
               radius="md"
               color={dark ? 'var(--mantine-color-white-7)' : 'var(--mantine-color-gray-7)'}
@@ -211,10 +252,10 @@ const AccountScreen = () => {
          </Group>
 
 
-        { isConnected && <Group style={{marginBottom: '40px'}} >
+        {attestation?.verified  && <Group style={{marginBottom: '40px'}} >
         <Stack gap='5px' style={{width: '300px'}} >
         <Text size="xl" > Trust Score</Text>
-        <Rating readOnly value={ 4.5 } fractions={2} count={5}/> 
+        <Rating readOnly value={ Number(attestation?.score) } fractions={2} count={10}/> 
         <Anchor target='_blank' href={`${NetworkUtil.getNetworkById(chainId)?.blockExplorer}/address/${address}`}>           
         <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} onClick={()=> window.open('https://passport.gitcoin.co') } >
              Increase the score by verifying via Gitcoin Passport. learn more..
@@ -223,13 +264,10 @@ const AccountScreen = () => {
          </Stack>
          </Group>
         }
+        </> 
+        }
 
-         
-
-
-
-
-          </Paper>
+      </Paper>
   
 
 </Container>

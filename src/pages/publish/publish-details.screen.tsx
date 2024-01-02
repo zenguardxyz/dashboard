@@ -6,7 +6,7 @@ import usePluginStore from "../../store/plugin/plugin.store";
 import { IconAlertCircle,  IconApps, IconConfetti, IconShield, IconShieldCheck, IconShieldLock } from "@tabler/icons";
 import {  useEffect, useState } from "react";
 import {  loadPluginDetails  } from "../../logic/plugins";
-import {  addIntegration, loadPublisher } from "../../logic/attestation";
+import {  addIntegration, loadPublisher, verificationDetails } from "../../logic/attestation";
 import { useHover } from "@mantine/hooks";
 import { useAccount } from "wagmi";
 import Safe from "../../assets/icons/safe.png";
@@ -35,6 +35,7 @@ const PublishDetailsScreen= () => {
   const [ loading, setLoading ] = useState(false);
   const sign = useEthersSigner(chainId);
   const [ signer, setSigner ] = useState(sign);
+  const [attestation, setAttestation]: any = useState();
  
   const { pluginDetails, setPluginDetails } = usePluginStore(
     (state: any) => state
@@ -43,7 +44,8 @@ const PublishDetailsScreen= () => {
   useEffect(() => {
     const fetchData = async() => {
         try {
-          setPluginDetails({...pluginDetails, ...(await loadPluginDetails(pluginDetails.address))})
+          setPluginDetails({...pluginDetails, ...(await loadPluginDetails(pluginDetails.address))});
+          setAttestation(await verificationDetails(address!));
         } catch(e) {
             console.warn(e)
         }
@@ -51,7 +53,7 @@ const PublishDetailsScreen= () => {
     }
     fetchData();
     setSigner(sign);
-}, [sign])
+}, [sign, address])
 
 
   async function publishModule() {
@@ -60,15 +62,14 @@ const PublishDetailsScreen= () => {
     setLoading(true);
     await addIntegration(pluginDetails.address, signer!); 
     setLoading(false);
-    navigate(RoutePath.home)
+    navigate(RoutePath.home);
     }
     catch {
       setLoading(false);
     }
 
   }
-
-
+  
 
 
   return (
@@ -179,7 +180,7 @@ const PublishDetailsScreen= () => {
        <Text className={classes.link} size="md" onClick={()=>{ window.open(loadPublisher(address!).link) }}>
          { loadPublisher(address!)?.name }
         </Text> 
-        <Rating readOnly value={ 5 } count={10}/>
+        <Rating readOnly value={ parseInt(attestation?.score) } count={10}/>
         </Stack>
         </Group>
 
@@ -203,7 +204,7 @@ const PublishDetailsScreen= () => {
             Trust Score:
           </Text> 
           <Text size="md" style={{fontWeight: 800}}>
-            { "80/ 100" }
+            { `${attestation?.score ?  parseInt(attestation?.score) * 10 : 0} / 100` }
           </Text>         
           </Group>
           </Group>
@@ -212,35 +213,13 @@ const PublishDetailsScreen= () => {
           <Image style={{ width: 25 }}  src= {X}  /> 
           <Anchor target='_blank' href={loadPublisher(address!)?.link}>           
           <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-              @zenguardxyz
+           { loadPublisher(address!)?.x }
             </Text>
             </Anchor>
             </Group>
           </Group>     
-        {/* <Divider />
 
-        <Group style={{ justifyContent: "space-between" }}>
-            <Text size="md" style={{fontWeight: 600}}>
-              Audit details 
-            </Text>{" "}
-
-          </Group> 
-
-        <Paper >
-            <Alert ref={ref} icon={<IconAlertCircle size="10rem" />}  title="No audits found." color="red" radius="md">
-               This module is not audited yet.
-            </Alert> 
-        </Paper> */}
-          
        
-
-  
-        {/* <Group >  
-        <Text size="m" >
-        🛡️ Audit Rating 
-        </Text>{" "}     
-        <Rating readOnly value={ 5 } count={10}/>
-        </Group> */}
         </> 
 
 
@@ -261,9 +240,14 @@ const PublishDetailsScreen= () => {
 
 
 
-        <Alert ref={ref} icon={<IconConfetti size="10rem" />}  title="Eligible to publish" color="green" radius="md" style={{width: '50%'}}>
+        { attestation?.verified && <Alert ref={ref} icon={<IconConfetti size="10rem" />}  title="Eligible to publish" color="green" radius="md" style={{width: '50%'}}>
                Your account has required creds to publish the module 🎊
-            </Alert> 
+         </Alert> }
+
+        { ! attestation?.verified && <Alert ref={ref} icon={<IconAlertCircle size="10rem" />}  title="Not eligible to publish" color="red" radius="md" style={{width: '50%'}}>
+               Your account doesn't have the required creds to publish the module 
+         </Alert> 
+        }
                       <Button
                 // loading={registering}
                 // onClick={() => { setPluginDetails({address}); navigate(RoutePath.publishDetails)}}

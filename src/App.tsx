@@ -10,7 +10,7 @@ import { WagmiConfig, createConfig } from "wagmi";
 import {  getDefaultConfig } from "connectkit";
 import { baseGoerli, sepolia, mainnet } from "wagmi/chains";
 
-const chains = [baseGoerli, sepolia, mainnet];
+const chains = [baseGoerli, sepolia, mainnet  ];
 
 const config = createConfig(
   getDefaultConfig({

@@ -109,12 +109,14 @@ function HomePage() {
       <div className={classes.actionsContainer}>
       {plugins.map((plugin) => 
         <Module
-        address={plugin}
+        address={plugin.integration}
+        publisher={plugin.publisher}
         pluginDetails={plugin.metadata? {enabled: plugin.enabled, metadata: plugin.metadata}: null}
       />)}
       { !plugins.length && mockPlugins.map((plugin) => 
         <Module
         address={plugin}
+        publisher={plugin}
       />)}
       </div>
 

@@ -4,7 +4,7 @@ import usePluginStore from "../../store/plugin/plugin.store";
 import { IconAlertCircle, IconPlus, IconShieldCheck, IconApps } from "@tabler/icons";
 import { useCallback, useEffect, useState } from "react";
 // import { attestIntegration, isValidAttestation, createAttestation, loadAttestation, loadAttestationDetails, loadAttestationData, loadAttester, loadPublisher } from "../../logic/attestation";
-import { loadPublisher } from "../../logic/attestation";
+import { loadPublisher, verificationDetails } from "../../logic/attestation";
 import { useHover } from "@mantine/hooks";
 import { useAccount } from "wagmi";
 
@@ -19,6 +19,7 @@ import { NetworkUtil } from "../../logic/networks";
 import { AddressUtil } from "@/utils/address";
 import PublishDetailsSkeleton from "../publish/components/publish-details.skeleton";
 import { LoaderModal } from "@/components/modals/loader.component";
+import { useEthersSigner } from "@/utils/wagmi";
 
 
 
@@ -42,10 +43,18 @@ const ModuleDetailsScreen = () => {
   const [attestation, setAttestation ]: any = useState();
   const [attestationData, setAttestationData ]: any = useState();
 
+  const sign = useEthersSigner(chainId);
+  const [ signer, setSigner ] = useState(sign);
+
  
   const { pluginDetails } = usePluginStore(
     (state: any) => state
   );
+
+
+
+ 
+
 
 
   useEffect(() => {
@@ -59,6 +68,12 @@ const ModuleDetailsScreen = () => {
 
       }
 
+      try {
+        setAttestation(await verificationDetails(address!));
+      } catch(e) {
+          console.warn(e)
+      }
+
      
       // try {
 
@@ -69,6 +84,7 @@ const ModuleDetailsScreen = () => {
       //   setAttested(await isValidAttestation(attestionId))
 
       //   const attestation = await loadAttestationDetails(attestionId);
+        
 
 
       //   setAttestation(attestation);
@@ -82,7 +98,7 @@ const ModuleDetailsScreen = () => {
       // }
       
   })()   
-  }, [])
+  }, [sign, pluginDetails.publisher])
 
 
 
@@ -183,10 +199,10 @@ return (
       <Group align='flex-start'>   
 
       <Group style={{ width: '50%'}}> 
-      <Avatar size={60}  src= {loadPublisher(address!)?.logo} alt="attester image" /> 
+      <Avatar size={60}  src= {loadPublisher(pluginDetails.publisher!)?.logo} alt="attester image" /> 
       <Stack gap='5px'>           
      <Text className={classes.link} size="md" onClick={()=>{ window.open(loadPublisher(address!).link) }}>
-       { loadPublisher(address!)?.name }
+     {loadPublisher(pluginDetails.publisher)?.name}
       </Text> 
       <Rating readOnly value={ 5 } count={10}/>
       </Stack>
@@ -196,7 +212,7 @@ return (
       <Avatar size={30}  src= {ETH} alt="attester image" /> 
       <Anchor target='_blank' href={`${NetworkUtil.getNetworkById(chainId)?.blockExplorer}/address/${address}`}>           
       <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-          {isConnected ? AddressUtil.shorternAddress(address!) : ''}
+          {isConnected ? AddressUtil.shorternAddress(pluginDetails.publisher!) : ''}
        </Text>
        </Anchor>
        </Group>
@@ -212,7 +228,7 @@ return (
           Trust Score:
         </Text> 
         <Text size="md" style={{fontWeight: 800}}>
-          { "80/ 100" }
+          { ` ${parseInt(attestation?.score) * 10}/ 100`  }
         </Text>         
         </Group>
         </Group>
@@ -221,7 +237,7 @@ return (
         <Image style={{ width: 25 }}  src= {X}  /> 
         <Anchor target='_blank' href={loadPublisher(address!)?.link}>           
         <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-            @zenguardxyz
+            {`@${loadPublisher(pluginDetails.publisher)?.x}`}
           </Text>
           </Anchor>
           </Group>

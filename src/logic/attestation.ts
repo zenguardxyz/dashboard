@@ -2,6 +2,7 @@ import { Interface, ethers, Signer } from "ethers"
 import { AddressZero } from "@ethersproject/constants";
 import { InjectedConnector, getWalletClient } from '@wagmi/core'
 import { Attestation, EAS, Offchain, SchemaEncoder, SchemaRegistry, SchemaDecodedItem } from "@ethereum-attestation-service/eas-sdk";
+import { SignerOrProvider } from "@ethereum-attestation-service/eas-sdk/dist/transaction";
 
 import {  getRegistry } from "./protocol";
 import { getProvider } from "./web3"
@@ -9,6 +10,7 @@ import { getProvider } from "./web3"
 import Safe from "../assets/icons/safe.png";
 import OZ from "../assets/icons/oz.png";
 import Certik from "../assets/icons/certik.png";
+import ZenGuard from "../assets/icons/zenguard.png";
 import { useEthersSigner } from "@/utils/wagmi";
 
 
@@ -45,19 +47,21 @@ const ATTESTER_INFO = { '0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db' : {
 }
 
 const PUBLISHER_INFO = {
-    '0xaA498424C846c44e2029E1835f9549d86d7C5E44': {
-      logo: '',
-      link: 'https://twitter.com/VitalikButerin',
-      name: 'Vitalik Buterin',
+    '0xd5B5Ff46dEB4baA8a096DD0267C3b81Bda65e943': {
+      logo: OZ,
+      link: 'https://www.openzeppelin.com',
+      name: 'OpenZeppelin',
       trust: 9,
     },
     '0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db': {
-      logo: OZ,
+      logo: ZenGuard,
       link: 'https://www.zenguard.xyz',
       name: 'ZenGuard',
+      x: 'zenguardxyz',
+      github: 'zenguardxyz',
       trust: 9,
     },
-    '0xd5B5Ff46dEB4baA8a096DD0267C3b81Bda65e943': {
+    '0xaA498424C846c44e2029E1835f9549d86d7C5E44': {
       logo: Safe,
       link: 'https://safe.global',
       name: 'Safe Ecosystem',
@@ -71,78 +75,82 @@ export const loadPublisher = (address: `0x${string}`) => {
     return Object(PUBLISHER_INFO)[address]
   }
 
-// export const loadAttestation = async(integration: string): Promise<string> => {
+export const loadAttestation = async(integration: string): Promise<string> => {
 
-//     const registry = await getRegistry()
-//     const { attestationId }  = await registry.checkAttest(integration)
-//     return attestationId
+    const registry = await getRegistry()
+    const { attestationId }  = await registry.checkAttest(integration)
+    return attestationId
 
-// }
+}
 
 
-// export const isValidAttestation = async(attestionId: string): Promise<boolean> => {
+export const listAttestation = async(address: string): Promise<string> => {
 
-    
-    
-//      type SignerOrProvider = ethers.Signer | ethers.Provider;
-//     // const provider =  await getProvider()
-//     const provider = ethers.getDefaultProvider(
-//         "sepolia"
-//       );
+    const registry = await getRegistry()
+    const { attestationId }  = await registry.listedAttestations(address)
+    return attestationId;
+}
 
-//     // Initialize the sdk with the address of the EAS Schema contract address
-//     const chainId =  (await provider.getNetwork()).chainId.toString()
-//     const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
+export const isValidAttestation = async(attestionId: string): Promise<boolean> => {
+
+
+    const provider =  await getProvider()
+
+
+    // Initialize the sdk with the address of the EAS Schema contract address
+    const chainId =  (await provider.getNetwork()).chainId.toString()
+    const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
 
     
       
-//     eas.connect(provider)
-//     return  eas.isAttestationValid(attestionId)
-// }
+    eas.connect(provider as any)
+    return  eas.isAttestationValid(attestionId)
+}
 
-// export const loadAttestationDetails = async(attestionId: string): Promise<Attestation> => {
+export const loadAttestationDetails = async(attestionId: string): Promise<Attestation> => {
 
-//         //  type SignerOrProvider = ethers.Signer | ethers.Provider;
-//         const provider =  await getProvider()
+        //  type SignerOrProvider = ethers.Signer | ethers.Provider;
+        const provider =  await getProvider()
 
-//         // Initialize the sdk with the address of the EAS Schema contract address
-//         const chainId =  (await provider.getNetwork()).chainId.toString()
+        // Initialize the sdk with the address of the EAS Schema contract address
+        const chainId =  (await provider.getNetwork()).chainId.toString()
 
-//         // Initialize the sdk with the address of the EAS Schema contract address
-//         const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
+        // Initialize the sdk with the address of the EAS Schema contract address
+        const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
         
+        eas.getAttestation
 
-//         eas.connect(provider)
-//         return eas.getAttestation(attestionId)
-// }
+        eas.connect(provider as any)
+        return eas.getAttestation(attestionId)
+}
 
 
-// export const loadAttestationData = async(data: string): Promise<SchemaDecodedItem[]> => {
+export const loadAttestationData = async(data: string, schema: string): Promise<SchemaDecodedItem[]> => {
 
-//      //  type SignerOrProvider = ethers.Signer | ethers.Provider;
-//      const provider =  await getProvider()
+     //  type SignerOrProvider = ethers.Signer | ethers.Provider;
+     const provider =  await getProvider()
 
-//      // Initialize the sdk with the address of the EAS Schema contract address
-//      const chainId =  (await provider.getNetwork()).chainId.toString()
+     // Initialize the sdk with the address of the EAS Schema contract address
+     const chainId =  (await provider.getNetwork()).chainId.toString()
 
-//     // Initialize the sdk with the address of the EAS Schema contract address
-//     const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
+    // Initialize the sdk with the address of the EAS Schema contract address
+    const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
 
-//     const schema = 'string docURI,uint8 rating'
-//     const schemaEncoder = new SchemaEncoder(schema);
+    // const schema = 'string docURI,uint8 rating'
+    const schemaEncoder = new SchemaEncoder(schema);
 
-//     return schemaEncoder.decodeData(data)
+    return schemaEncoder.decodeData(data)
 
-// }
+}
 
 // export const createAttestation = async (value: any []) => {
 
-//     const provider =  new ethers.BrowserProvider(window.ethereum)
+//     const provider =  new ethers.BrowserProvider(window.ethereum as any)
 //     const chainId =  (await provider.getNetwork()).chainId.toString()
 
 //     const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
     
-//     eas.connect(await provider.getSigner())
+//     eas.connect(await provider.getSigner() as any)
 
 //     const schema = 'string docURI,uint8 rating'
 //     const schemaEncoder = new SchemaEncoder(schema);
@@ -172,6 +180,7 @@ export const loadPublisher = (address: `0x${string}`) => {
 // }
 
 
+
 // export const attestIntegration = async (plugin: string, attestation: string) => {
 
 //     const provider =  new ethers.BrowserProvider(window.ethereum)
@@ -182,6 +191,15 @@ export const loadPublisher = (address: `0x${string}`) => {
 //     await attestationTx.wait()
 
 // }
+
+export const attestPublisher = async (attestation: string, signer: Signer) => {
+
+
+    const registry = await getRegistry(signer);
+    const attestationTx = await registry.attestPublisher(attestation);
+    await attestationTx.wait()
+
+}
 
 
 export const loadAttester =  (address: string) => {
@@ -198,3 +216,31 @@ export const addIntegration = async (module: string, signer: Signer) => {
     await integratioTx.wait()
 
 }
+
+export const verificationDetails =  async (address: string) => {
+
+   const attestationId = await  listAttestation(address)
+   console.log(attestationId)
+   try {
+
+          const {  data } =   await loadAttestationDetails(attestationId);
+
+          console.log(data)
+
+          const schema = 'bool verified, uint8 score, uint8[] profiles'
+
+          const attestationData  = await loadAttestationData(data, schema);
+
+          return {verified: attestationData[0].value.value,
+                  score: attestationData[1].value.value,
+                  profiles: (attestationData[2].value.value as any).toArray()}
+
+
+   }
+   catch(e) {
+       return {}
+   }
+
+}
+
+// attestationData[1].value.value

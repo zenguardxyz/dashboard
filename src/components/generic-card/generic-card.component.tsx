@@ -19,13 +19,14 @@ export interface GenericCardProps {
   image?: string;
   loading?: boolean;
   onClick?: any;
+  publisher?: string;
 }
 
 
 export const GenericCard: React.FC<GenericCardProps> = (
   props
 ) => {
-  const { enabled, width, title, loading = true, onClick, image} = props;
+  const { enabled, width, title, loading = true, onClick, image, publisher} = props;
 
   return (
     <>
@@ -38,7 +39,7 @@ export const GenericCard: React.FC<GenericCardProps> = (
       <div>
               <p className={classes.pluginName}>{title}</p>
               <p className={classes.description}>
-              Published By: {loadPublisher('0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db').name}.
+              Published By: {loadPublisher(publisher)?.name}.
               </p>
             </div>
       {enabled && <Chip checked color="green" variant="light" size="xs" radius="md">Enabled</Chip>}
