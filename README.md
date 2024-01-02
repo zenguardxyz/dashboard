@@ -15,13 +15,13 @@
 ## Deployments
 
 - ZenGuard Safe Core Protocol Registry  
-  - [Base Goerli](hhttps://goerli.basescan.org/address/0xbc334A41b98a0d28277769963eD5D4A7bc429879)
-  - [Sepolia Testnet](https://goerli.etherscan.io/address/0x31e02552F56939fA4B28CF3D86b552A4eA70f3E9)
+  - [Base Goerli](https://goerli.basescan.org/address/0xbc334A41b98a0d28277769963eD5D4A7bc429879)
+  - [Sepolia Testnet](https://sepolia.etherscan.io/address/0x31e02552F56939fA4B28CF3D86b552A4eA70f3E9)
 
 
 - ZenGuard Safe Core Protocol Manager  
-  - [Base Goerli](hhttps://goerli.basescan.org/address/0x1789c680FDb930FA85d60039cF39B023C48de155)
-  - [Sepolia Testnet](https://goerli.etherscan.io/address/0x548ffe3207b643a6d95F7bfa01b5D4A0fb7DF01a)
+  - [Base Goerli](https://goerli.basescan.org/address/0x1789c680FDb930FA85d60039cF39B023C48de155)
+  - [Sepolia Testnet](https://sepolia.etherscan.io/address/0x548ffe3207b643a6d95F7bfa01b5D4A0fb7DF01a)
 
 - ZenGuard Verification EAS schemas
   - [Base Goerli](https://sepolia.easscan.org/schema/view/0x242c1cec21b788b2e47d7a27ee6343d45aeafddf445fad38a25f5e33d1ba77d4)
