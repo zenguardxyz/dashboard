@@ -15,7 +15,7 @@ export const AppLayout: React.FC<AppLayoutProps> = (props) => {
 
   const dark = colorScheme == "dark";
   return (
-    <ConnectKitProvider mode={dark ? "dark" : "light"} onConnect={()=>{console.log('connected')}}>
+    <ConnectKitProvider mode={dark ? "dark" : "light"}>
     <AppShell
     header={{ height: 116 }}
     padding="md"

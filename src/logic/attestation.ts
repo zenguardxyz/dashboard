@@ -1,4 +1,4 @@
-import { Interface, ethers, Signer } from "ethers"
+import { Interface, ethers, Signer, JsonRpcSigner } from "ethers"
 import { AddressZero } from "@ethersproject/constants";
 import { InjectedConnector, getWalletClient } from '@wagmi/core'
 import { Attestation, EAS, Offchain, SchemaEncoder, SchemaRegistry, SchemaDecodedItem } from "@ethereum-attestation-service/eas-sdk";
@@ -15,9 +15,9 @@ import { useEthersSigner } from "@/utils/wagmi";
 
 
 const EASAddresses = { '84531': {EASAddress: "0x4200000000000000000000000000000000000021", schemaId: "0xf79919ba6a03ab2adce36fcf31344023d006fd3418dd33499d3f8b8aa54fabda"},
-                       '11155111': {EASAddress: "0xC2679fBD37d54388Ce493F1DB75320D236e1815e", schemaId: "0xf79919ba6a03ab2adce36fcf31344023d006fd3418dd33499d3f8b8aa54fabda"}}
+                       '11155111': {EASAddress: "0xC2679fBD37d54388Ce493F1DB75320D236e1815e", schemaId: "0x975ba45202b5e2f314cae0c0ae1e464a53abaed083b9b95248190b71c461ac36"}}
 
-const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
+export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 const ATTESTER_INFO = { '0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db' : {
     logo: '',
@@ -51,6 +51,8 @@ const PUBLISHER_INFO = {
       logo: OZ,
       link: 'https://www.openzeppelin.com',
       name: 'OpenZeppelin',
+      x: 'OpenZeppelin',
+      github: 'OpenZeppelin',
       trust: 9,
     },
     '0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db': {
@@ -65,6 +67,8 @@ const PUBLISHER_INFO = {
       logo: Safe,
       link: 'https://safe.global',
       name: 'Safe Ecosystem',
+      x: 'safe',
+      github: 'safe-global',
       trust: 10,
     },
   }
@@ -143,54 +147,68 @@ export const loadAttestationData = async(data: string, schema: string): Promise<
 
 }
 
-// export const createAttestation = async (value: any []) => {
+export const createAttestation = async (value: any [] , signer: JsonRpcSigner) => {
 
-//     const provider =  new ethers.BrowserProvider(window.ethereum as any)
-//     const chainId =  (await provider.getNetwork()).chainId.toString()
-
-//     const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
     
-//     eas.connect(await provider.getSigner() as any)
+    const chainId =  (await signer.provider.getNetwork()).chainId.toString()
 
-//     const schema = 'string docURI,uint8 rating'
-//     const schemaEncoder = new SchemaEncoder(schema);
-
-//     const encodedData = schemaEncoder.encodeData([
-//     { name: "docURI", value: value[0], type: "string" },
-//     { name: "rating", value: value[1], type: "uint8" },
-//     ]);
+    const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
     
+    eas.connect(signer as any)
 
-//     const attestationTx = await eas.attest(   {
-//         schema: Object(EASAddresses)[chainId].schemaId,
-//         data: ({
-//             recipient: AddressZero, // No recipient
-//             // expirationTime: 0, // No expiration time
-//             revocable: true,
-//             refUID: ZERO_BYTES32, // No references UI
-//             data: encodedData, // Encode a single uint256 as a parameter to the schema
-//             // value: 0 // No value/ETH
-//         })
-//     })
+    const schema = 'address auditor,uint256 issuedAt,uint256[] ercs,address auditedContract,bytes32 auditHash,string auditUri,uint8 auditScore,bytes auditorSignature';
+    const schemaEncoder = new SchemaEncoder(schema);
 
-//     const attestation = await attestationTx.wait()
+    console.log(schema)
 
-//     return attestation
+    const encodedData = schemaEncoder.encodeData([
+    { name: "auditor", value: value[0], type: "address" },
+    { name: "issuedAt", value: value[1], type: "uint256" },
+    { name: "ercs", value: value[2], type: "uint256[]"},
+    { name: "auditedContract", value: value[3], type: "address" },
+    { name: "auditHash", value: value[4], type: "bytes32" },
+    { name: "auditUri", value: value[5], type: "string" },
 
-// }
-
+    { name: "auditScore", value: value[6], type: "uint8" },
+    { name: "auditorSignature", value: value[7], type: "bytes"},
 
 
-// export const attestIntegration = async (plugin: string, attestation: string) => {
 
-//     const provider =  new ethers.BrowserProvider(window.ethereum)
-//     const chainId =  (await provider.getNetwork()).chainId.toString()
 
-//     const registry = await getRegistry(await provider.getSigner())
-//     const attestationTx = await registry.attestIntegration(plugin, Object(EASAddresses)[chainId].EASAddress, attestation)
-//     await attestationTx.wait()
+    ]);
+    
+    console.log(encodedData)
 
-// }
+
+    const attestationTx = await eas.attest(   {
+        schema: Object(EASAddresses)[chainId].schemaId,
+        data: ({
+            recipient: AddressZero, // No recipient
+            // expirationTime: 0, // No expiration time
+            revocable: true,
+            refUID: ZERO_BYTES32, // No references UI
+            data: encodedData, // Encode a single uint256 as a parameter to the schema
+            // value: 0 // No value/ETH
+        })
+    })
+
+    const attestation = await attestationTx.wait()
+    return attestation
+
+   
+
+}
+
+
+
+export const attestIntegration = async (plugin: string, attestation: string, signer: JsonRpcSigner) => {
+
+    const registry = await getRegistry(signer);
+    const chainId =  (await signer.provider.getNetwork()).chainId.toString()
+    const attestationTx = await registry.attestIntegration(plugin, attestation)
+    await attestationTx.wait()
+
+}
 
 export const attestPublisher = async (attestation: string, signer: Signer) => {
 
@@ -242,5 +260,33 @@ export const verificationDetails =  async (address: string) => {
    }
 
 }
+
+export const auditDetails =  async (address: string) => {
+
+    const attestationId = await  listAttestation(address)
+    try {
+ 
+           const {  data } =   await loadAttestationDetails(attestationId);
+
+           const schema = 'address auditor,uint256 issuedAt,uint256[] ercs,address auditedContract,bytes32 auditHash,string auditUri,uint8 auditScore,bytes auditorSignature';
+ 
+           const attestationData  = await loadAttestationData(data, schema);
+ 
+           return {auditor: attestationData[0].value.value,
+                   issuedAt: attestationData[1].value.value,
+                   ercs: attestationData[2].value.value,
+                   auditedContract: attestationData[3].value.value,
+                   auditHash: attestationData[4].value.value,
+                   auditUri: attestationData[5].value.value,
+                   auditScore: attestationData[6].value.value,
+                   auditorSignature: attestationData[7].value.value }
+ 
+ 
+    }
+    catch(e) {
+        return {}
+    }
+ 
+ }
 
 // attestationData[1].value.value

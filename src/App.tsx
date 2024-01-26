@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import { MantineProvider } from '@mantine/core';
 
 import { AppLayout } from "./components";
@@ -8,9 +9,9 @@ import { HashRouter } from 'react-router-dom';
 
 import { WagmiConfig, createConfig } from "wagmi";
 import {  getDefaultConfig } from "connectkit";
-import { baseGoerli, sepolia, mainnet } from "wagmi/chains";
+import { baseGoerli, sepolia, mainnet, polygon, base } from "wagmi/chains";
 
-const chains = [baseGoerli, sepolia, mainnet  ];
+const chains = [sepolia, baseGoerli, mainnet, polygon, base   ];
 
 const config = createConfig(
   getDefaultConfig({
