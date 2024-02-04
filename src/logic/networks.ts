@@ -68,11 +68,11 @@ export const networks = {
 
   base: {
     name: 'Base',
-    type: 'Testnet',
-    chainId: 84531,
-    url: `https://rpc.ankr.com/base_goerli`,
+    type: 'Mainnet',
+    chainId: 8453,
+    url: `https://base-mainnet.g.alchemy.com/v2/NTGkSXMuKkoHwQ_W4eNpGlihUScplXYV`,
     blockExplorer: "https://basescan.org",
-    safeService: "https://safe-transaction-base-testnet.safe.global",
+    safeService: "https://safe-transaction-base.safe.global",
     api: `https://api-goerli.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
     easExplorer: "",
   },

@@ -1,21 +1,21 @@
-import { Interface, ethers, Signer, JsonRpcSigner } from "ethers"
+import { JsonRpcSigner } from "ethers"
 import { AddressZero } from "@ethersproject/constants";
-import { InjectedConnector, getWalletClient } from '@wagmi/core'
-import { Attestation, EAS, Offchain, SchemaEncoder, SchemaRegistry, SchemaDecodedItem } from "@ethereum-attestation-service/eas-sdk";
-import { SignerOrProvider } from "@ethereum-attestation-service/eas-sdk/dist/transaction";
+import { Attestation, EAS, SchemaEncoder, SchemaRegistry, SchemaDecodedItem } from "@ethereum-attestation-service/eas-sdk";
 
 import {  getRegistry } from "./protocol";
-import { getProvider } from "./web3"
+import { getJsonRpcProvider, getProvider } from "./web3"
 
 import Safe from "../assets/icons/safe.png";
 import OZ from "../assets/icons/oz.png";
 import Certik from "../assets/icons/certik.png";
 import ZenGuard from "../assets/icons/zenguard.png";
-import { useEthersSigner } from "@/utils/wagmi";
-
 
 const EASAddresses = { '84531': {EASAddress: "0x4200000000000000000000000000000000000021", schemaId: "0xf79919ba6a03ab2adce36fcf31344023d006fd3418dd33499d3f8b8aa54fabda"},
-                       '11155111': {EASAddress: "0xC2679fBD37d54388Ce493F1DB75320D236e1815e", schemaId: "0x975ba45202b5e2f314cae0c0ae1e464a53abaed083b9b95248190b71c461ac36"}}
+                       '11155111': {EASAddress: "0xC2679fBD37d54388Ce493F1DB75320D236e1815e", schemaId: "0x975ba45202b5e2f314cae0c0ae1e464a53abaed083b9b95248190b71c461ac36"},
+                       '8453': {EASAddress: "0x4200000000000000000000000000000000000021", schemaId: "0x975ba45202b5e2f314cae0c0ae1e464a53abaed083b9b95248190b71c461ac36"}}
+
+export const MOCK_VERIFICATIONS = {11155111: '0x2f7059b402e9a52cd676e52a420e2e86db13fc1b092b55764a3de6ea17b3eb22', 8453: '0x9c499782652eb818a3135643fad74d69fa107aad1da50067b1609ce2c62128ce' }
+
 
 export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
@@ -79,18 +79,18 @@ export const loadPublisher = (address: `0x${string}`) => {
     return Object(PUBLISHER_INFO)[address]
   }
 
-export const loadAttestation = async(integration: string): Promise<string> => {
+export const loadAttestation = async(integration: string, chainId: number): Promise<string> => {
 
-    const registry = await getRegistry()
+    const registry = await getRegistry(chainId)
     const { attestationId }  = await registry.checkAttest(integration)
     return attestationId
 
 }
 
 
-export const listAttestation = async(address: string): Promise<string> => {
+export const listAttestation = async(address: string, chainId: number): Promise<string> => {
 
-    const registry = await getRegistry()
+    const registry = await getRegistry(chainId)
     const { attestationId }  = await registry.listedAttestations(address)
     return attestationId;
 }
@@ -111,31 +111,21 @@ export const isValidAttestation = async(attestionId: string): Promise<boolean> =
     return  eas.isAttestationValid(attestionId)
 }
 
-export const loadAttestationDetails = async(attestionId: string): Promise<Attestation> => {
+export const loadAttestationDetails = async(attestionId: string, chainId: number): Promise<Attestation> => {
 
         //  type SignerOrProvider = ethers.Signer | ethers.Provider;
-        const provider =  await getProvider()
-
-        // Initialize the sdk with the address of the EAS Schema contract address
-        const chainId =  (await provider.getNetwork()).chainId.toString()
+        const provider =  await getJsonRpcProvider(chainId)
 
         // Initialize the sdk with the address of the EAS Schema contract address
         const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
         
-        eas.getAttestation
-
         eas.connect(provider as any)
         return eas.getAttestation(attestionId)
 }
 
 
-export const loadAttestationData = async(data: string, schema: string): Promise<SchemaDecodedItem[]> => {
+export const loadAttestationData = async(data: string, schema: string, chainId: number): Promise<SchemaDecodedItem[]> => {
 
-     //  type SignerOrProvider = ethers.Signer | ethers.Provider;
-     const provider =  await getProvider()
-
-     // Initialize the sdk with the address of the EAS Schema contract address
-     const chainId =  (await provider.getNetwork()).chainId.toString()
 
     // Initialize the sdk with the address of the EAS Schema contract address
     const eas = new EAS(Object(EASAddresses)[chainId].EASAddress);
@@ -176,8 +166,6 @@ export const createAttestation = async (value: any [] , signer: JsonRpcSigner) =
 
 
     ]);
-    
-    console.log(encodedData)
 
 
     const attestationTx = await eas.attest(   {
@@ -195,7 +183,6 @@ export const createAttestation = async (value: any [] , signer: JsonRpcSigner) =
     const attestation = await attestationTx.wait()
     return attestation
 
-   
 
 }
 
@@ -203,18 +190,19 @@ export const createAttestation = async (value: any [] , signer: JsonRpcSigner) =
 
 export const attestIntegration = async (plugin: string, attestation: string, signer: JsonRpcSigner) => {
 
-    const registry = await getRegistry(signer);
-    const chainId =  (await signer.provider.getNetwork()).chainId.toString()
+
+    const chainId =  (await signer.provider.getNetwork()).chainId
+    const registry = await getRegistry(Number(chainId), signer);
     const attestationTx = await registry.attestIntegration(plugin, attestation)
     await attestationTx.wait()
 
 }
 
-export const attestPublisher = async (attestation: string, signer: Signer) => {
+export const attestPublisher = async (signer: JsonRpcSigner) => {
 
-
-    const registry = await getRegistry(signer);
-    const attestationTx = await registry.attestPublisher(attestation);
+    const chainId =  (await signer.provider.getNetwork()).chainId
+    const registry = await getRegistry(Number(chainId), signer);
+    const attestationTx = await registry.attestPublisher(Object(MOCK_VERIFICATIONS)[Number(chainId)]);
     await attestationTx.wait()
 
 }
@@ -227,27 +215,28 @@ export const loadAttester =  (address: string) => {
 }
 
 
-export const addIntegration = async (module: string, signer: Signer) => {
+export const addIntegration = async (module: string, signer: JsonRpcSigner) => {
 
-    const registry = await getRegistry(signer);
+    const chainId =  (await signer.provider.getNetwork()).chainId
+    const registry = await getRegistry(Number(chainId), signer);
     const integratioTx = await registry.addIntegration(module, 1);
     await integratioTx.wait()
 
 }
 
-export const verificationDetails =  async (address: string) => {
+export const verificationDetails =  async (address: string, chainId: number) => {
 
-   const attestationId = await  listAttestation(address)
+   const attestationId = await  listAttestation(address, chainId)
    console.log(attestationId)
    try {
 
-          const {  data } =   await loadAttestationDetails(attestationId);
+          const {  data } =   await loadAttestationDetails(attestationId, chainId);
 
           console.log(data)
 
           const schema = 'bool verified, uint8 score, uint8[] profiles'
 
-          const attestationData  = await loadAttestationData(data, schema);
+          const attestationData  = await loadAttestationData(data, schema, chainId);
 
           return {verified: attestationData[0].value.value,
                   score: attestationData[1].value.value,
@@ -256,21 +245,22 @@ export const verificationDetails =  async (address: string) => {
 
    }
    catch(e) {
+       console.log(e)
        return {}
    }
 
 }
 
-export const auditDetails =  async (address: string) => {
+export const auditDetails =  async (address: string, chainId: number) => {
 
-    const attestationId = await  listAttestation(address)
+    const attestationId = await  listAttestation(address, chainId)
     try {
  
-           const {  data } =   await loadAttestationDetails(attestationId);
+           const {  data } =   await loadAttestationDetails(attestationId, chainId);
 
            const schema = 'address auditor,uint256 issuedAt,uint256[] ercs,address auditedContract,bytes32 auditHash,string auditUri,uint8 auditScore,bytes auditorSignature';
  
-           const attestationData  = await loadAttestationData(data, schema);
+           const attestationData  = await loadAttestationData(data, schema, chainId);
  
            return {auditor: attestationData[0].value.value,
                    issuedAt: attestationData[1].value.value,

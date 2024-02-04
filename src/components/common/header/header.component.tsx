@@ -38,7 +38,7 @@ import classes from "./header.component.module.css";
 
 
 const badgeIcons =   [
-  { ids: ['84531'], img: Base },
+  { ids: ['84531', '8453'], img: Base },
   { ids: ['11155111', '5', '1'], img: ETH },
   { ids: ['100'], img: Gnosis}
   // Add more mappings as needed
@@ -62,16 +62,6 @@ export const Head = (props) => {
 
   const dark = colorScheme === "dark";
   const navigate = useNavigate();
-
-
-  useEffect(() => {
-
-    ;(async () => {
-
-
-  })()   
-  }, [])
-
 
 
   return (
