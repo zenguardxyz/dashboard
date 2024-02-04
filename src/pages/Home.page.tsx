@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Center, Container, Input, Select, Stack } from "@mantine/core";
+import { Button, Image, Container, Input, Select, Stack, Text, Center } from "@mantine/core";
 import './modules/Module.css';
 import { loadPluginDetails, loadPlugins, PluginDetails } from '../logic/plugins';
 import { Module } from './modules/Module';
@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { RoutePath } from '@/navigation';
 import { useNetwork, useChainId } from 'wagmi';
 import usePluginStore from '@/store/plugin/plugin.store';
-
+import Search from "../assets/icons/search.png";
 
 
 const mockPlugins = ["1", "2", "3", "4", "5", "6"]
@@ -16,42 +16,43 @@ const mockPlugins = ["1", "2", "3", "4", "5", "6"]
 function HomePage() {
 
   const [showFlagged, setFilterFlagged] = useState<boolean>(false);
-  const [details, setDetails] = useState<[]>([])
+  const [details, setDetails] = useState<[]>([]);
+  const [loading, setLoading] = useState(true);
   const [plugins, setPlugins] = useState<any[]>([]);
-  const { chainId, setChainId } = usePluginStore((state: any) => state);
+  const { chainId } = usePluginStore((state: any) => state);
 
   const navigate = useNavigate();
-  // To listen to network switch
-  const chain = useChainId()
 
 
-  const fetchData = useCallback(async () => {
-    try {
-      setPlugins([])
-      const plugins = await loadPlugins(!showFlagged)
-      let newDetails: any = []
-      setPlugins(plugins)
-      for(let i=0; i< plugins.length; i++) 
-      {
-         newDetails.push({... {module: plugins[i]} , ...await loadPluginDetails(plugins[i])})
-         setDetails(newDetails)
+  useEffect(() => {
+
+    ;(async () => {
+
+      try {
+        setPlugins([]);
+        console.log(chainId)
+        const plugins = await loadPlugins(!showFlagged, chainId)
+
+        console.log(plugins)
+
+        console.log(plugins.length)
+        let newDetails: any = []
+        setPlugins(plugins)
+        setLoading(false);
+        for(let i=0; i< plugins.length; i++) 
+        {
+           newDetails.push({... {module: plugins[i]} , ...await loadPluginDetails(plugins[i], chainId)})
+           setDetails(newDetails)
+        }
+        
+
+      } catch (e) {
+        console.warn(e)
       }
 
-      
-    } catch (e) {
-      console.warn(e)
-    }
-  }, [])
 
-  
-  useEffect(() => {
-      fetchData();
-      // Setting this globally
-      setChainId(chain)
-
-   
-
-  }, [fetchData, chain])
+  })()   
+  }, [chainId])
 
   const handleSearchPlugin = (searchString: string) => {
 
@@ -88,7 +89,7 @@ function HomePage() {
             placeholder='Search Modules'
             type='text'
             style={{ width: '100%'}}
-            onChange={(event: any)=>{ handleSearchPlugin(event.target.value) }}
+            // onChange={(event: any)=>{ handleSearchPlugin(event.target.value) }}
             
           />
           <div>
@@ -97,7 +98,7 @@ function HomePage() {
               style={{ width: '100%'}}
               variant='filled'
               placeholder='Pick value'
-              data={['Show All', 'Only Enabled']}
+              data={['Show All', 'By You']}
               defaultValue='Show All'
               clearable
             />
@@ -107,18 +108,28 @@ function HomePage() {
           </Button>
         </div>
       <div className={classes.actionsContainer}>
-      {plugins.map((plugin) => 
+      { plugins.map((plugin) => 
         <Module
         address={plugin.integration}
         publisher={plugin.publisher}
         pluginDetails={plugin.metadata? {enabled: plugin.enabled, metadata: plugin.metadata}: null}
       />)}
-      { !plugins.length && mockPlugins.map((plugin) => 
+      { loading && !plugins.length && mockPlugins.map((plugin) => 
         <Module
         address={plugin}
         publisher={plugin}
       />)}
       </div>
+      { !loading && !plugins.length && <Stack align='center'>
+      <Image style={{  width: "100px" }}src={Search} alt="Error" /> 
+        <Stack  align='center' justify='center' gap='5px' style={{width: '200px'}}>
+        <Text size="md" > No Modules Found</Text>          
+        <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400, textAlign: 'center'}} >
+            Modules have not been published yet
+         </Text>
+         </Stack>
+         </Stack>
+      }
 
     </Container>
   </Container>

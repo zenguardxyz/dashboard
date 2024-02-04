@@ -30,7 +30,7 @@ const ModuleAttestationScreen = () => {
   const dark = colorScheme === "dark";
   const navigate = useNavigate();
 
-  const { chainId, setChainId } = usePluginStore((state: any) => state);
+  const { chainId } = usePluginStore((state: any) => state);
   const { address, isConnected } = useAccount();
 
 
@@ -51,7 +51,6 @@ const ModuleAttestationScreen = () => {
   const [attestationData, setAttestationData ]: any = useState();
 
   const sign = useEthersSigner(chainId);
-  const chain = useChainId()
   const [ signer, setSigner ] = useState(sign);
 
  
@@ -74,7 +73,7 @@ const ModuleAttestationScreen = () => {
       }
 
       try {
-        setAttestation(await verificationDetails(address!));
+        setAttestation(await verificationDetails(address!, chainId));
       } catch(e) {
           console.warn(e)
       }
@@ -91,7 +90,7 @@ const handleAddAttestation = async () => {
 
   setCreating(true);
   const attestationId = await createAttestation([address, issuedAt?.valueOf(), [], pluginDetails.address, auditHash, auditUri, auditScore, auditorSignature], sign!);
-  const attestation = await loadAttestationDetails(attestationId);
+  const attestation = await loadAttestationDetails(attestationId, chainId);
 
   console.log(attestation)
 

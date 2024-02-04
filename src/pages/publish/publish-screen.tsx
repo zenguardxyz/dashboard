@@ -27,7 +27,6 @@ const PublishScreen = () => {
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [chainId, setChainId]: any = useState(PROTOCOL_CHAIN_ID);
 
  
   const { setPluginDetails } = usePluginStore(
@@ -35,24 +34,6 @@ const PublishScreen = () => {
   );
 
 
-  useEffect(() => {
-
-    ;(async () => {
-      
- 
-      try {
-        const provider =  await getProvider()
-        const chainId =  (await provider.getNetwork()).chainId
-        setChainId(chainId)
-    
-      }
-      catch(e)
-      {
-        console.log(e)
-      }
-      
-  })()   
-  }, [])
 
 
   return (

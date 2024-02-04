@@ -1,11 +1,11 @@
-import { Box, Center, Container, Group, Title, Modal, Text, Image, Stack, Button, TextInput, Divider, Alert, Skeleton, Rating, Avatar, Chip, useMantineColorScheme, Anchor, Paper, Badge } from "@mantine/core";
+import { Box, Center, Container, Group, Title, Modal, Text, Image, Stack, Button, TextInput, Divider, Alert, Skeleton, Rating, Avatar, Chip, useMantineColorScheme, Anchor, Paper, Badge, GroupProps } from "@mantine/core";
 import classes  from "./module-details.screen.module.css";
 import usePluginStore from "../../store/plugin/plugin.store";
 import { IconAlertCircle, IconPlus, IconShieldCheck, IconApps } from "@tabler/icons";
 import { useCallback, useEffect, useState } from "react";
 // import { attestIntegration, isValidAttestation, createAttestation, loadAttestation, loadAttestationDetails, loadAttestationData, loadAttester, loadPublisher } from "../../logic/attestation";
-import { loadPublisher, verificationDetails } from "../../logic/attestation";
-import { useHover } from "@mantine/hooks";
+import { attestIntegration, auditDetails, createAttestation, loadAttestationDetails, loadAttester, loadPublisher, verificationDetails } from "../../logic/attestation";
+import { useDisclosure, useHover } from "@mantine/hooks";
 import { useAccount } from "wagmi";
 
 
@@ -19,34 +19,25 @@ import { NetworkUtil } from "../../logic/networks";
 import { AddressUtil } from "@/utils/address";
 import PublishDetailsSkeleton from "../publish/components/publish-details.skeleton";
 import { LoaderModal } from "@/components/modals/loader.component";
-import { useEthersSigner } from "@/utils/wagmi";
+
+import { AuditDetailsModal } from "@/components/modals/audit-details.component";
 
 
 
 const ModuleDetailsScreen = () => {
   const { hovered, ref } = useHover();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const [details,  { open, close }] = useDisclosure(false);
   const dark = colorScheme === "dark";
   const navigate = useNavigate();
 
-  const { chainId, setChainId } = usePluginStore((state: any) => state);
+  const { chainId } = usePluginStore((state: any) => state);
   const { address, isConnected } = useAccount();
 
 
-  const [attested, setAttested] = useState(false);
-  const [attestModal, setAttestModal] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [enabling, setEnabling] = useState(false);
-  const [docLink, setDocLink] = useState('');
-  const [rating, setRating] = useState(5);
-  const [attestation, setAttestation ]: any = useState();
-  const [attestationData, setAttestationData ]: any = useState();
+  const [publisherAttestation, setPublisherAttestation ]: any = useState();
+  const [auditAttestation, setAuditAttestation ]: any = useState();
 
-  const sign = useEthersSigner(chainId);
-  const [ signer, setSigner ] = useState(sign);
-
- 
   const { pluginDetails } = usePluginStore(
     (state: any) => state
   );
@@ -69,62 +60,25 @@ const ModuleDetailsScreen = () => {
       }
 
       try {
-        setAttestation(await verificationDetails(address!));
+        setPublisherAttestation(await verificationDetails(address!, chainId));
+        setAuditAttestation(await auditDetails(pluginDetails.address!, chainId));
+        
       } catch(e) {
           console.warn(e)
       }
 
      
-      // try {
-
-      //   const provider =  await getProvider()
-      //   const chainId =  (await provider.getNetwork()).chainId
-      //   setChainId(chainId)
-      //   const attestionId = await loadAttestation(pluginDetails.address)
-      //   setAttested(await isValidAttestation(attestionId))
-
-      //   const attestation = await loadAttestationDetails(attestionId);
-        
-
-
-      //   setAttestation(attestation);
-      //   setAttestationData(await loadAttestationData(attestation.data))
-    
-      // }
-      // catch(e)
-      // {
-      //   setAttestation({})
-      //   console.log(e)
-      // }
       
   })()   
-  }, [sign, pluginDetails.publisher])
+  }, [pluginDetails.publisher])
 
 
 
-// const handleAddAttestation = async () => {
-
-//   setAttestModal(false);
-//   setCreating(true);
-//   const attestationId = await createAttestation([docLink, rating]);
-//   const attestation = await loadAttestationDetails(attestationId);
-
-//   console.log(attestation)
-
-//   setAttestation(attestation);
-//   setAttested(true);
-//   setCreating(false);
-//   setLoading(true);
-//   await attestIntegration(pluginDetails.address, attestationId)
-//   setLoading(false);
-  
-  
-// }
 
 return (
   ! pluginDetails.metadata ? <PublishDetailsSkeleton /> : 
   <Paper  className={classes.settingsContainer}>
-    <LoaderModal loading={loading} text={"Publishing your module. Hang tight ⏲️"} />
+    <AuditDetailsModal open={details}  close={close} auditAttestation={auditAttestation}/>
   <Container className={classes.formContainer}>
       
     <Title size="20">Plugin Details</Title>
@@ -147,9 +101,14 @@ return (
       <Text size="sm" style={{fontWeight: 600}}>
             ⚙️ Version: {pluginDetails.metadata?.version}
       </Text>
-      <Badge variant="light" color="orange" style={{fontWeight: 600 }}>
-            ROOT ACCESS
+      {pluginDetails.requiresRootAccess && <Badge variant="light" color="orange" style={{fontWeight: 600 }}>
+              ROOT ACCESS
       </Badge>
+      }
+       {!pluginDetails.requiresRootAccess && <Badge variant="light" color="green" style={{fontWeight: 600 }}>
+              NO ROOT ACCESS
+      </Badge>
+      }
       </Group>
 
       </Stack>
@@ -193,9 +152,35 @@ return (
 
         </Group> 
 
-      <> 
 
+    { !auditAttestation && 
+   
+        <Stack> 
+            <Group
+            style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            }}
+        >
+        <Skeleton height={80} mt={6} radius="lg"  width="100%" />
+        </Group>
+        <Group
+            style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            }}
+        >
+            <Skeleton height={20} mt={6}  radius="xl"  width="100%" />
+        </Group>  
 
+        </Stack>  
+   }    
+
+     { auditAttestation && <> 
       <Group align='flex-start'>   
 
       <Group style={{ width: '50%'}}> 
@@ -204,7 +189,7 @@ return (
      <Text className={classes.link} size="md" onClick={()=>{ window.open(loadPublisher(address!).link) }}>
      {loadPublisher(pluginDetails.publisher)?.name}
       </Text> 
-      <Rating readOnly value={ 5 } count={10}/>
+      <Rating readOnly value={ parseInt(publisherAttestation?.score) } count={10}/>
       </Stack>
       </Group>
 
@@ -228,7 +213,7 @@ return (
           Trust Score:
         </Text> 
         <Text size="md" style={{fontWeight: 800}}>
-          { ` ${parseInt(attestation?.score) * 10}/ 100`  }
+          { ` ${parseInt(publisherAttestation?.score) * 10}/ 100`  }
         </Text>         
         </Group>
         </Group>
@@ -241,7 +226,8 @@ return (
           </Text>
           </Anchor>
           </Group>
-        </Group>     
+        </Group>  
+   
       <Divider />
 
       <Group style={{ justifyContent: "space-between" }}>
@@ -252,24 +238,62 @@ return (
         </Group> 
 
       <Paper >
-          <Alert ref={ref} icon={<IconAlertCircle size="10rem" />}  title="No audits found." color="red" radius="md">
+         {  !Object.keys(auditAttestation).length ? 
+           <Stack>
+           <Alert ref={ref} icon={<IconAlertCircle size="10rem" />}  title="No audits found." color="red" radius="md">
              This module is not audited yet.
           </Alert> 
-      </Paper>
+          <Group>
+          <Button 
+              // loading={registering}
+              onClick={async () => { navigate(RoutePath.moduleAttestation) }}
+              leftSection={<IconApps />} 
+              variant="light"
+              radius="md"
+              color={dark ? 'var(--mantine-color-white-7)' : 'var(--mantine-color-gray-7)'}
+            >
+            ADD AUDIT DETAILS
+        </Button>
+         </Group>
+          </Stack>
+         
+          :
+          <Alert  className={classes.alert} onClick={ open }ref={ref} icon={<IconShieldCheck size="10rem" />}  title="Audited By." color="green" radius="md">
+
+      <Group >  
+      <Group> 
+    <Avatar size={60} src= {loadAttester(auditAttestation.auditor)?.logo} alt="attester image" /> 
+      <Stack gap='5px'>           
+     <Text className={classes.link} size="md" onClick={()=>{ window.open(loadAttester(auditAttestation.auditor!).link) }}>
+     {loadAttester(auditAttestation.auditor as any)?.name}
+      </Text> 
+      <Group gap='5px'>           
+     <Text fw={700} size="md" onClick={()=>{ window.open(loadAttester(auditAttestation.auditor!).link) }}>
+     Issued on
+      </Text> 
+      <Text className={classes.link} size="sm" >
+      { new Date(Number(auditAttestation.issuedAt)).toDateString() }
+      </Text> 
+      
+      </Group>
+      </Stack>
+      </Group>
 
 
-      {/* <Group >  
-      <Text size="m" >
-      🛡️ Audit Rating 
+      <Stack style={{marginLeft: 'auto', paddingRight: '60px'}}>
+      <Text size="sm">
+      🛡️ Audit Score 
       </Text>{" "}     
-      <Rating readOnly value={ 5 } count={10}/>
-      </Group> */}
+      <Rating size="sm" readOnly value={ Number(auditAttestation.auditScore) } count={10}/>
+      </Stack>
+      </Group>
+            
+          </Alert> 
+         }
+      </Paper>
       </> 
-
-
-        <Group >  
-
-
+     }
+     <Group >  
       </Group >
 
          </Stack>
