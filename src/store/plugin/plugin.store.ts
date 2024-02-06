@@ -7,7 +7,7 @@ const usePluginStore = create((set) => ({
   accountDetails: {},
   authDetails: {},
   pluginDetails: {},
-  chainId:  localStorage.getItem("chainId") ? parseInt(localStorage.getItem("chainId")!) : 11155111,
+  chainId: 0,
   confirming: false,
   confirmed: false,
   tab: RoutePath.home,

@@ -12,14 +12,14 @@ export const getProvider = async(): Promise<AbstractProvider> => {
         return await getSafeAppsProvider()
     }
     const connector = new InjectedConnector()
-    console.log(connector.getChainId())
+
     console.log("Use JsonRpcProvider")
-    return new ethers.JsonRpcProvider(NetworkUtil.getNetworkById(await connector.getChainId())?.url)
+    return new ethers.JsonRpcProvider(NetworkUtil.getNetworkById(11155111)?.url)
 }
 
-export const getJsonRpcProvider = async(chainId: string): Promise<AbstractProvider> => {
+export const getJsonRpcProvider = async(chainId: number): Promise<AbstractProvider> => {
 
     console.log("Use JsonRpcProvider")
     
-    return new ethers.JsonRpcProvider(NetworkUtil.getNetworkById(parseInt(chainId))?.url)
+    return new ethers.JsonRpcProvider(NetworkUtil.getNetworkById(chainId)?.url)
 }

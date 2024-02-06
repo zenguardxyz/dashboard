@@ -29,23 +29,24 @@ const PublishDetailsScreen= () => {
   const dark = colorScheme === "dark";
   const navigate = useNavigate();
 
-  const { chainId } = usePluginStore((state: any) => state);
 
   const { address, isConnected } = useAccount();
   const [ loading, setLoading ] = useState(false);
-  const sign = useEthersSigner(chainId);
-  const [ signer, setSigner ] = useState(sign);
+  
+  
   const [attestation, setAttestation]: any = useState();
  
-  const { pluginDetails, setPluginDetails } = usePluginStore(
+  const { pluginDetails, setPluginDetails, chainId } = usePluginStore(
     (state: any) => state
   );
+  const sign = useEthersSigner(chainId);
+  const [ signer, setSigner ] = useState(sign);
 
   useEffect(() => {
     const fetchData = async() => {
         try {
-          setPluginDetails({...pluginDetails, ...(await loadPluginDetails(pluginDetails.address))});
-          setAttestation(await verificationDetails(address!));
+          setPluginDetails({...pluginDetails, ...(await loadPluginDetails(pluginDetails.address, chainId))});
+          setAttestation(await verificationDetails(address!, chainId));
         } catch(e) {
             console.warn(e)
         }
@@ -132,9 +133,14 @@ const PublishDetailsScreen= () => {
               Module Permissions (Root, Admin etc.)
         </Text>
         </Stack>
-        <Badge variant="light" color="orange" style={{fontWeight: 600, marginLeft:100 }}>
+        {pluginDetails.requiresRootAccess && <Badge variant="light" color="orange" style={{fontWeight: 600,  marginLeft:100 }}>
               ROOT ACCESS
         </Badge>
+        }
+        {!pluginDetails.requiresRootAccess && <Badge variant="light" color="green" style={{fontWeight: 600,  marginLeft:100  }}>
+              NO ROOT ACCESS
+        </Badge>
+        }
         </Group>
 
         <Group align='center' style={{marginBlock: 0}}>

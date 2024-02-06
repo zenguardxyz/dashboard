@@ -12,12 +12,12 @@ const PLUGIN_ABI = [
     "function metadataProvider() external view returns (uint256 providerType, bytes location)"
 ]
 
-export const getManager = async() => {
-    const provider = await getProvider()
-    const chainId =  (await provider.getNetwork()).chainId.toString()
+export const getManager = async(chainId: number) => {
+
+    const provider = await getJsonRpcProvider(chainId)
 
 
-    const registryInfo = protocolDeployments[chainId as keyof typeof protocolDeployments][0].contracts.SafeProtocolManagerAttestation;
+    const registryInfo = protocolDeployments[chainId.toString() as keyof typeof protocolDeployments][0].contracts.SafeProtocolManagerAttestation;
     return new ethers.Contract(
         registryInfo.address,
         registryInfo.abi,
@@ -25,14 +25,13 @@ export const getManager = async() => {
     )
 }
 
-export const getRegistry = async(signer?: Signer) => {
+export const getRegistry = async( chainId: number, signer?: Signer,) => {
+    
+    console.log
 
-    const provider = await getProvider()
-    // Updating the provider RPC if it's from the Safe App.
-    const chainId =  (await provider.getNetwork()).chainId.toString()
     const bProvider = await getJsonRpcProvider(chainId)
 
-    const registryInfo = protocolDeployments[chainId as keyof typeof protocolDeployments][0].contracts.SafeProtocolRegistryAttestation;
+    const registryInfo = protocolDeployments[chainId.toString() as keyof typeof protocolDeployments][0].contracts.SafeProtocolRegistryAttestation;
     return new ethers.Contract(
         registryInfo.address,
         registryInfo.abi,
@@ -40,8 +39,9 @@ export const getRegistry = async(signer?: Signer) => {
     )
 }
 
-export const getPlugin = async(pluginAddress: string) => {
-    const provider = await getProvider()
+export const getPlugin = async(chainId: number, pluginAddress: string) => {
+
+    const provider = await getJsonRpcProvider(chainId)
     return new ethers.Contract(
         pluginAddress,
         PLUGIN_ABI,
@@ -49,8 +49,9 @@ export const getPlugin = async(pluginAddress: string) => {
     )
 }
 
-export const getMetadataProvider = async(providerAddress: string) => {
-    const provider = await getProvider()
+export const getMetadataProvider = async(chainId: number, providerAddress: string) => {
+
+    const provider = await getJsonRpcProvider(chainId)
     return new ethers.Contract(
         providerAddress,
         Metadata_PROVIDER_ABI,

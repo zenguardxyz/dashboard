@@ -10,6 +10,17 @@ export class AddressUtil {
     return shortern;
   }
 
+  static shorternURI(str: string) {
+    
+    if(str.length < 50)
+    return str;
+    let shortern =
+      str.length > 10
+        ? str.substr(0, 30) + "...." + str.substr(str.length - 20, str.length)
+        : str;
+    return shortern;
+  }
+
 
   /** Digest format
    * sv[26 character id][64 character secret]

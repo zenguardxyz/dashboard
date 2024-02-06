@@ -10,4 +10,5 @@ export enum RoutePath {
   pluginDetails = "/plugin-details",
   publish = "/publish",
   publishDetails = "/publish-details",
+  moduleAttestation = "/module-attestation",
 }

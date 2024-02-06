@@ -19,15 +19,13 @@ const ProviderType_Event = BigInt(3);
 const MetadataEvent: string[] = ["event Metadata(bytes32 indexed metadataHash, bytes data)"]
 const PluginMetadataType: string[] = ["string name", "string version", "bool requiresRootAccess", "string iconUrl", "string appUrl", "bool hook"];
 
-const loadPluginMetadataFromContract = async (provider: string, metadataHash: string): Promise<string> => {
-    const providerInstance = await getMetadataProvider(provider);
+const loadPluginMetadataFromContract = async (provider: string, metadataHash: string, chainId: number): Promise<string> => {
+    const providerInstance = await getMetadataProvider(chainId, provider);
     return await providerInstance.retrieveMetadata(metadataHash);
 };
 
-const loadPluginMetadataFromEvent = async (provider: string, metadataHash: string): Promise<string> => {
-    const appProvider = await getProvider()
-    // Updating the provider RPC if it's from the Safe App.
-    const chainId =  (await appProvider.getNetwork()).chainId.toString()
+const loadPluginMetadataFromEvent = async (provider: string, metadataHash: string, chainId: number): Promise<string> => {
+    
     const web3Provider = await getJsonRpcProvider(chainId)
     const eventInterface = new Interface(MetadataEvent)
     const events = await web3Provider.getLogs({
@@ -43,13 +41,13 @@ const loadPluginMetadataFromEvent = async (provider: string, metadataHash: strin
 };
 
 
-const loadRawMetadata = async (plugin: Contract, metadataHash: string): Promise<string> => {
+const loadRawMetadata = async (plugin: Contract, metadataHash: string, chainId: number): Promise<string> => {
     const [type, source] = await plugin.metadataProvider();
     switch (type) {
         case ProviderType_Contract:
-            return loadPluginMetadataFromContract(AbiCoder.defaultAbiCoder().decode(["address"], source)[0], metadataHash);
+            return loadPluginMetadataFromContract(AbiCoder.defaultAbiCoder().decode(["address"], source)[0], metadataHash, chainId);
         case ProviderType_Event:
-            return loadPluginMetadataFromEvent(AbiCoder.defaultAbiCoder().decode(["address"], source)[0], metadataHash);
+            return loadPluginMetadataFromEvent(AbiCoder.defaultAbiCoder().decode(["address"], source)[0], metadataHash, chainId);
         default:
             throw Error("Unsupported MetadataProviderType");
     }
@@ -82,10 +80,10 @@ export const decodePluginMetadata = (data: string, pluginAddress?: string): Plug
     };
 };
 
-export const loadPluginMetadata = async (plugin: Contract): Promise<PluginMetadata> => {
+export const loadPluginMetadata = async (plugin: Contract, chainId: number): Promise<PluginMetadata> => {
 
     const metadataHash = await plugin.metadataHash();
-    const metadata = await loadRawMetadata(plugin, metadataHash);
+    const metadata = await loadRawMetadata(plugin, metadataHash, chainId);
     if (metadataHash !== keccak256(metadata)) throw Error("Invalid metadata retrieved!");
     return decodePluginMetadata(metadata, await plugin.getAddress());
 };

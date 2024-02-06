@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import { MantineProvider } from '@mantine/core';
 
 import { AppLayout } from "./components";
@@ -6,11 +7,13 @@ import { Navigation } from './navigation';
 import { theme } from './theme';
 import { HashRouter } from 'react-router-dom';
 
-import { WagmiConfig, createConfig } from "wagmi";
+import { WagmiConfig, createConfig, useChainId } from "wagmi";
 import {  getDefaultConfig } from "connectkit";
-import { baseGoerli, sepolia, mainnet } from "wagmi/chains";
+import { baseGoerli, sepolia, mainnet, polygon, base, goerli } from "wagmi/chains";
+import { useEffect } from 'react';
+import usePluginStore from './store/plugin/plugin.store';
 
-const chains = [baseGoerli, sepolia, mainnet  ];
+const chains = [sepolia, goerli, baseGoerli, mainnet, polygon, base   ];
 
 const config = createConfig(
   getDefaultConfig({
@@ -33,6 +36,20 @@ const config = createConfig(
 
 
 export default function App() {
+  
+
+    const { setChainId } = usePluginStore((state: any) => state);
+    // To listen to network switch
+    const chain = useChainId()
+    console.log(chain)
+
+
+  useEffect(() => {
+
+
+      setChainId(chain)
+
+  }, [chain])
 
   return (
     <WagmiConfig config={config}>
@@ -46,3 +63,5 @@ export default function App() {
     </WagmiConfig>
   );
 }
+
+

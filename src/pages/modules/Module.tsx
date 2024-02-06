@@ -3,7 +3,7 @@ import { FunctionComponent, useCallback, useEffect, useState } from "react";
 
 import "./Module.css";
 import { PluginMetadata } from "../../logic/metadata";
-import { PluginDetails, disablePlugin, enablePlugin, loadPluginDetails } from "../../logic/plugins";
+import { PluginDetails,  loadPluginDetails } from "../../logic/plugins";
 import { openSafeApp } from "../../logic/safeapp";
 import { GenericCard } from "../../components";
 import { useNavigate } from "react-router-dom";
@@ -30,6 +30,8 @@ type ModuleProps = {
 
 export const Module: FunctionComponent<ModuleProps> = ({ address, publisher, pluginDetails }) => {
     const [details, setDetails] = useState<PluginDetails|undefined>(undefined);
+    const { chainId } = usePluginStore((state: any) => state);
+
     const navigate = useNavigate();
 
     const { setPluginDetails } = usePluginStore(
@@ -38,7 +40,7 @@ export const Module: FunctionComponent<ModuleProps> = ({ address, publisher, plu
     useEffect(() => {
         const fetchData = async() => {
             try {
-                setDetails(pluginDetails ? pluginDetails : await loadPluginDetails(address))
+                setDetails(pluginDetails ? pluginDetails : await loadPluginDetails(address, chainId))
             } catch(e) {
                 console.warn(e)
             }
