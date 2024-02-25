@@ -196,9 +196,9 @@ const AccountScreen = () => {
         <Image style={{width: 40}}  src= {X} alt="attester image" /> 
         <Stack gap='5px' style={{width: '200px'}} >
         <Text size="md" > Twitter Account</Text>
-        <Anchor target='_blank' href={`https://x.com/${loadPublisher(address!).x}`}>           
+        <Anchor target='_blank' href={`https://x.com/${loadPublisher(address!)?.x}`}>           
         <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-            { attestation?.profiles?.includes(1n) && loadPublisher(address!)?.x ? `@${loadPublisher(address!).x}` : 'Your Twitter account'}
+            { attestation?.profiles?.includes(1n) && loadPublisher(address!)?.x ? `@${loadPublisher(address!)?.x}` : 'Your Twitter account'}
          </Text>
          </Anchor>
          </Stack>
@@ -224,9 +224,9 @@ const AccountScreen = () => {
         <Avatar size={40}  src= {GitHub} alt="attester image" /> 
         <Stack gap='5px' style={{width: '200px'}} >
         <Text size="md" > GitHub Account</Text>
-        <Anchor target='_blank' href={`https://github.com/${loadPublisher(address!).github}`}>           
+        <Anchor target='_blank' href={`https://github.com/${loadPublisher(address!)?.github}`}>           
         <Text size="md" color='var(--mantine-color-gray-6)' style={{fontWeight: 400}} >
-          { attestation?.profiles?.includes(2n) && loadPublisher(address!)?.github ? `@${loadPublisher(address!).github}`  : 'Your GitHub account'}
+          { attestation?.profiles?.includes(2n) && loadPublisher(address!)?.github ? `@${loadPublisher(address!)?.github}`  : 'Your GitHub account'}
          </Text>
          </Anchor>
          </Stack>

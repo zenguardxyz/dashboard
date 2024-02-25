@@ -19,16 +19,17 @@ export const MOCK_VERIFICATIONS = {11155111: '0x2f7059b402e9a52cd676e52a420e2e86
 
 export const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
-const ATTESTER_INFO = { '0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db' : {
-    logo: '',
-    link: 'https://twitter.com/VitalikButerin',
-    name: 'Vitalik Buterin',
-    trust: 9,
-},
+const ATTESTER_INFO = { 
 '0xd5B5Ff46dEB4baA8a096DD0267C3b81Bda65e943' : {
     logo: OZ,
     link: 'https://www.openzeppelin.com',
     name: 'OpenZeppelin',
+    trust: 9,
+},
+'0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db' : {
+    logo: ZenGuard,
+    link: 'https://www.zenguard.xyz',
+    name: 'ZenGuard Audits',
     trust: 9,
 },
 '0xaA498424C846c44e2029E1835f9549d86d7C5E44' : {

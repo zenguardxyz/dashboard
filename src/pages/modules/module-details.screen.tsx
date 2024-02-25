@@ -45,6 +45,7 @@ const ModuleDetailsScreen = () => {
 
 
  
+  console.log(publisherAttestation)
 
 
 
@@ -60,7 +61,7 @@ const ModuleDetailsScreen = () => {
       }
 
       try {
-        setPublisherAttestation(await verificationDetails(address!, chainId));
+        setPublisherAttestation(await verificationDetails(pluginDetails.publisher!, chainId));
         setAuditAttestation(await auditDetails(pluginDetails.address!, chainId));
         
       } catch(e) {
